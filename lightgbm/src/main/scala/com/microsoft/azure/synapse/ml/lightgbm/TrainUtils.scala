@@ -119,7 +119,15 @@ private object TrainUtils extends Serializable {
 
       afterTrainIteration(state, log, trainEvalResults, validEvalResults)
 
+      /** add a sleep with a random duration after every interation, in order to scatter the network flow between
+       executors to reduce the chance of socket err */
+      val range = 30
+      val intervalSeconds = util.Random.nextInt(range)
+      Thread.sleep(intervalSeconds * 1000)
+      log.info(s"sleep ${intervalSeconds} seconds after ${state.iteration}...")
+
       state.iteration = state.iteration + 1
+
       if (!state.isFinished && state.iteration < maxIterations) {
         iterationLoop(maxIterations)  // tail recursion
       } else {
