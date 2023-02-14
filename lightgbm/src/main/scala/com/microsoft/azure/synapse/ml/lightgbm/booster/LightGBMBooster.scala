@@ -355,9 +355,26 @@ class LightGBMBooster(val trainDataset: Option[LightGBMDataset] = None,
   def updateOneIteration(): Boolean = {
     val isFinishedPtr = lightgbmlib.new_intp()
     try {
-      LightGBMUtils.validate(
-        lightgbmlib.LGBM_BoosterUpdateOneIter(boosterHandler.boosterPtr, isFinishedPtr),
-        "Booster Update One Iter")
+      var retryTimes = 0
+      while(retryTimes < 3) {
+        try {
+          LightGBMUtils.validate(lightgbmlib.LGBM_BoosterUpdateOneIter(boosterHandler.boosterPtr, isFinishedPtr),
+            "Booster Update One Iter")
+          retryTimes = 3
+        } catch {
+          case e: java.lang.Exception => {
+            val retMsg = e.toString
+            if (retMsg.contains("Socket send error, code: 110") && retryTimes < 3) {
+              println("Error but not reach the max retry times. Inner exception: " + retMsg)
+              retryTimes = retryTimes + 1
+              println("sleep 30 seconds before retry...")
+              Thread.sleep(30 * 1000)
+            } else {
+              throw e
+            }
+          }
+        }
+      }
       lightgbmlib.intp_value(isFinishedPtr) == 1
     } finally {
       lightgbmlib.delete_intp(isFinishedPtr)
