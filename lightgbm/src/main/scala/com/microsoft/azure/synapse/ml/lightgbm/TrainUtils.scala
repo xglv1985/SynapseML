@@ -121,7 +121,7 @@ private object TrainUtils extends Serializable {
 
       /** add a sleep with a random duration after every iteration, in order to scatter the network flow between
        executors to reduce the chance of socket err */
-      val range = 30
+      val range = 5
       val intervalSeconds = util.Random.nextInt(range)
       log.info(s"sleep ${intervalSeconds} seconds after iteration ${state.iteration}...")
       Thread.sleep(intervalSeconds * 1000)
