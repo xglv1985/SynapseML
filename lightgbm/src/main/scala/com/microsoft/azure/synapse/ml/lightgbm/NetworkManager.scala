@@ -241,8 +241,8 @@ object NetworkManager {
         taskServerSocket = Option(new Socket())
         taskServerSocket.get.bind(new InetSocketAddress(localListenPort))
       } catch {
-        case _: IOException =>
-          log.warn(s"Could not bind to port $localListenPort...")
+        case e: Exception =>
+          log.warn(s"Could not bind to port $localListenPort... " + e.toString)
           localListenPort += 1
           if (localListenPort > LightGBMConstants.MaxPort) {
             throw new Exception(s"Error: port $basePort out of range, possibly due to networking or firewall issues")
