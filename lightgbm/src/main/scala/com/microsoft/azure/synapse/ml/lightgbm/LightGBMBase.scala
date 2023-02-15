@@ -588,7 +588,7 @@ trait LightGBMBase[TrainedModel <: Model[TrainedModel]] extends Estimator[Traine
     val workerTaskHandler: BasePartitionTask =
       if (ctx.isStreaming) new StreamingPartitionTask()
       else new BulkPartitionTask()
-    val mapPartitionsFunc = workerTaskHandler.mapPartitionTask(ctx)(_)
+    val mapPartitionsFunc = workerTaskHandler.mapPartitionTask(dataframe.sparkSession, ctx)(_)
 
     val encoder = Encoders.kryo[PartitionResult]
     measures.markTrainingStart()

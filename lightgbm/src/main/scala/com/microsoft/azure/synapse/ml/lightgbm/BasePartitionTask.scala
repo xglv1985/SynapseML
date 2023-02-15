@@ -127,7 +127,8 @@ abstract class BasePartitionTask extends Serializable with Logging {
     * @param inputRows The Spark rows as an iterator.
     * @return result iterator (to comply with Spark mapPartition API).
     */
-  def mapPartitionTask(ctx: TrainingContext)(inputRows: Iterator[Row]): Iterator[PartitionResult] = {
+  def mapPartitionTask(spark: SparkSession,
+                       ctx: TrainingContext)(inputRows: Iterator[Row]): Iterator[PartitionResult] = {
     // Start with initialization
     val taskCtx = initialize(ctx, inputRows)
 
@@ -141,7 +142,7 @@ abstract class BasePartitionTask extends Serializable with Logging {
       try {
         if (taskCtx.shouldExecuteTraining) {
           // If participating in training, initialize the network ring of communication
-          NetworkManager.initLightGBMNetwork(taskCtx, log)
+          NetworkManager.initLightGBMNetwork(spark, taskCtx, log)
 
           if (ctx.useSingleDatasetMode) {
             log.info(s"Waiting for all data prep to be done, task ${taskCtx.taskId}, partition ${taskCtx.partitionId}")

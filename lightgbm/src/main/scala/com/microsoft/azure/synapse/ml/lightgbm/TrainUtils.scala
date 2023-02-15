@@ -19,7 +19,7 @@ private object TrainUtils extends Serializable {
     // Create the booster
     val parameters = trainParams.toString()
     val booster = new LightGBMBooster(trainDataset, parameters)
-     trainParams.generalParams.modelString.foreach { modelStr =>
+    trainParams.generalParams.modelString.foreach { modelStr =>
       booster.mergeBooster(modelStr)
     }
     validDatasetOpt.foreach { dataset =>
@@ -65,11 +65,11 @@ private object TrainUtils extends Serializable {
   def getLearningRate(state: PartitionTaskTrainingState, log: Logger): Double = {
     state.ctx.trainingParams.delegate match {
       case Some(delegate) => delegate.getLearningRate(state.ctx.trainingCtx.batchIndex,
-                                                      state.ctx.partitionId,
-                                                      state.iteration,
-                                                      log,
-                                                      state.ctx.trainingParams,
-                                                      state.learningRate)
+        state.ctx.partitionId,
+        state.iteration,
+        log,
+        state.ctx.trainingParams,
+        state.learningRate)
       case None => state.learningRate
     }
   }
@@ -119,15 +119,7 @@ private object TrainUtils extends Serializable {
 
       afterTrainIteration(state, log, trainEvalResults, validEvalResults)
 
-      /** add a sleep with a random duration after every iteration, in order to scatter the network flow between
-       executors to reduce the chance of socket err */
-      val range = 5
-      val intervalSeconds = util.Random.nextInt(range)
-      log.info(s"sleep ${intervalSeconds} seconds after iteration ${state.iteration}...")
-      Thread.sleep(intervalSeconds * 1000)
-
       state.iteration = state.iteration + 1
-
       if (!state.isFinished && state.iteration < maxIterations) {
         iterationLoop(maxIterations)  // tail recursion
       } else {
@@ -154,14 +146,14 @@ private object TrainUtils extends Serializable {
       log.info(s"Valid $evalName=$evalScore")
       val cmp =
         if (evalName.startsWith("auc")
-            || evalName.startsWith("ndcg@")
-            || evalName.startsWith("map@")
-            || evalName.startsWith("average_precision"))
+          || evalName.startsWith("ndcg@")
+          || evalName.startsWith("map@")
+          || evalName.startsWith("average_precision"))
           (x: Double, y: Double, tol: Double) => x - y > tol
         else
           (x: Double, y: Double, tol: Double) => x - y < tol
       if (state.bestScores(index) == null
-          || cmp(evalScore, state.bestScore(index), state.ctx.trainingCtx.improvementTolerance)) {
+        || cmp(evalScore, state.bestScore(index), state.ctx.trainingCtx.improvementTolerance)) {
         state.bestScore(index) = evalScore
         state.bestIteration(index) = state.iteration
         state.bestScores(index) = evalResults.map(_._2)

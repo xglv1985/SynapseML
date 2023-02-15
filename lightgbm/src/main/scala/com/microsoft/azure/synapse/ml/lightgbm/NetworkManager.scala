@@ -179,7 +179,8 @@ object NetworkManager {
     partitionList.split(",").map(str => str.toInt).sorted
   }
 
-  def initLightGBMNetwork(ctx: PartitionTaskContext,
+  def initLightGBMNetwork(spark: SparkSession,
+                          ctx: PartitionTaskContext,
                           log: Logger,
                           retry: Int = LightGBMConstants.NetworkRetries,
                           delay: Long = LightGBMConstants.InitialDelay): Unit = {
@@ -188,7 +189,7 @@ object NetworkManager {
       LightGBMUtils.validate(lightgbmlib.LGBM_NetworkInit(
         ctx.lightGBMNetworkString,
         ctx.localListenPort,
-        LightGBMConstants.DefaultListenTimeout,
+        spark.sparkContext.getConf.getInt("spark.lgbm.network.init.timeout", LightGBMConstants.DefaultListenTimeout),
         ctx.lightGBMNetworkMachineCount), "Network init")
       log.info(s"NetworkInit succeeded. LightGBM task listening on: ${ctx.localListenPort}")
     } catch {
@@ -200,7 +201,7 @@ object NetworkManager {
           throw ex
         }
         log.info(s"Retrying NetworkInit with local port ${ctx.localListenPort}")
-        initLightGBMNetwork(ctx, log, retry - 1, delay * 2)
+        initLightGBMNetwork(spark, ctx, log, retry - 1, delay * 2)
     }
   }
 
