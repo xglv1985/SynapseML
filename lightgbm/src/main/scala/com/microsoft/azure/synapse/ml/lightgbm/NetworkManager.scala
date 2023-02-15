@@ -179,17 +179,17 @@ object NetworkManager {
     partitionList.split(",").map(str => str.toInt).sorted
   }
 
-  def initLightGBMNetwork(spark: SparkSession,
-                          ctx: PartitionTaskContext,
+  def initLightGBMNetwork(ctx: PartitionTaskContext,
                           log: Logger,
                           retry: Int = LightGBMConstants.NetworkRetries,
                           delay: Long = LightGBMConstants.InitialDelay): Unit = {
     log.info(s"Calling NetworkInit on local port ${ctx.localListenPort} with value ${ctx.lightGBMNetworkString}")
+    val listenTimeout = 60000
     try {
       LightGBMUtils.validate(lightgbmlib.LGBM_NetworkInit(
         ctx.lightGBMNetworkString,
         ctx.localListenPort,
-        spark.sparkContext.getConf.getInt("spark.lgbm.network.init.timeout", LightGBMConstants.DefaultListenTimeout),
+        listenTimeout,
         ctx.lightGBMNetworkMachineCount), "Network init")
       log.info(s"NetworkInit succeeded. LightGBM task listening on: ${ctx.localListenPort}")
     } catch {
