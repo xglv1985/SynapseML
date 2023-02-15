@@ -201,7 +201,7 @@ object NetworkManager {
           throw ex
         }
         log.info(s"Retrying NetworkInit with local port ${ctx.localListenPort}")
-        initLightGBMNetwork(spark, ctx, log, retry - 1, delay * 2)
+        initLightGBMNetwork(ctx, log, retry - 1, delay * 2)
     }
   }
 
